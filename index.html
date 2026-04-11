@@ -21,7 +21,10 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;700&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;700&family=Inter:wght@300;400;500;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet" />
+  
+  <!-- Security: CSP -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; script-src 'self' 'unsafe-inline'; font-src https://fonts.gstatic.com;">
   
   <style>
     /* ============================
@@ -64,7 +67,7 @@
       --trans-base: 250ms ease;
       --trans-slow: 400ms ease;
       
-      --font-serif: 'Noto Serif KR', Georgia, serif;
+      --font-serif: 'Cinzel', 'Noto Serif KR', Georgia, serif;
       --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
@@ -97,7 +100,7 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; background: var(--clr-bg); }
+    html { scroll-behavior: smooth; background: var(--clr-bg); scrollbar-gutter: stable; }
     body {
       font-family: var(--font-sans);
       background: var(--clr-bg);
@@ -296,6 +299,12 @@
     
     .btn-danger { background: var(--clr-danger-pale); color: var(--clr-danger); border: 1px solid var(--clr-danger); }
     .btn-danger:hover { background: var(--clr-danger); color: #fff; }
+
+    .btn-subtle { background: #a89f91; color: #fff; }
+    .btn-subtle:hover { background: #968a7a; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(168,159,145,0.2); }
+    
+    .btn-restore { background: #5d574e; color: #fff; }
+    .btn-restore:hover { background: #4a453e; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(93,87,78,0.2); }
 
     .btn-sm { padding: 10px 18px; font-size: 0.85rem; }
     .btn-full { width: 100%; }
@@ -541,30 +550,15 @@
   <!-- TAB: BACKUP & SETTINGS -->
   <section id="panel-backup" class="tab-panel">
     <div class="card">
-      <h2 class="card-title">백업 및 복구</h2>
-      <p style="color:var(--clr-text-mid); font-size:0.9rem; margin-bottom:24px; line-height:1.6;">
-        브라우저 데이터를 삭제하면 일기가 날아갈 수 있습니다.<br/>주기적으로 안전한 곳에 백업 파일을 보관하세요.
-      </p>
-      
-      <div class="backup-controls">
-        <div class="backup-card">
-          <div class="backup-card-icon">📥</div>
-          <p style="font-weight:700; margin-bottom:16px;">데이터 내보내기</p>
-          <button class="btn btn-ghost btn-full" onclick="downloadBackup()">⬇ 백업 다운로드</button>
-        </div>
-        <div class="backup-card">
-          <div class="backup-card-icon">📤</div>
-          <p style="font-weight:700; margin-bottom:16px;">데이터 불러오기</p>
-          <label class="file-input-label">
-            ⬆ 파일 선택 (덮어쓰기)
-            <input type="file" accept=".json" id="file-restore" onchange="triggerRestore(this)">
-          </label>
-        </div>
+      <h2 class="card-title">화면 테마 설정</h2>
+      <div style="display:flex; gap:12px; margin-bottom:24px;">
+        <button class="btn btn-ghost" id="btn-theme-light" onclick="setAppTheme('light')" style="flex:1;">☀️ 낮 모드</button>
+        <button class="btn btn-ghost" id="btn-theme-dark" onclick="setAppTheme('dark')" style="flex:1;">🌙 밤 모드</button>
       </div>
-      
+
       <div class="divider"></div>
-      
-      <h2 class="card-title">비밀번호 및 보안 관리</h2>
+
+      <h2 class="card-title">비밀번호 관리</h2>
       <p style="color:var(--clr-text-mid); font-size:0.9rem; margin-bottom:24px; font-weight: 400; word-break: keep-all;">
         비밀번호는 앱 내에서 무조건 필수로 유지해야 합니다.<br />
         비밀번호를 잊어버리면 데이터는 영원히 복구할 수 없습니다.
@@ -574,19 +568,59 @@
       </div>
 
       <div class="divider"></div>
-      
-      <h2 class="card-title">화면 테마 설정</h2>
-      <div style="display:flex; gap:12px; margin-bottom:24px;">
-        <button class="btn btn-ghost" id="btn-theme-light" onclick="setAppTheme('light')" style="flex:1;">☀️ 낮 모드</button>
-        <button class="btn btn-ghost" id="btn-theme-dark" onclick="setAppTheme('dark')" style="flex:1;">🌙 밤 모드</button>
-      </div>
 
+      <h2 class="card-title">백업 및 복구</h2>
+      <p style="color:var(--clr-text-mid); font-size:0.9rem; margin-bottom:24px; line-height:1.6;">
+        브라우저 데이터를 삭제하면 일기 데이터가 삭제될 수 있습니다.<br/>주기적으로 안전한 곳에 백업 파일을 보관하세요.
+      </p>
+      
+      <div class="backup-controls">
+        <div class="backup-card">
+          <div class="backup-card-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--clr-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <p style="font-weight:700; margin-bottom:16px;">데이터 내보내기</p>
+          <button class="btn btn-subtle btn-full" onclick="downloadBackup()">⬇ 백업 다운로드</button>
+        </div>
+        <div class="backup-card">
+          <div class="backup-card-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--clr-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </div>
+          <p style="font-weight:700; margin-bottom:16px;">데이터 불러오기</p>
+          <label class="file-input-label btn-restore">
+            ⬆ 파일 선택 (덮어쓰기)
+            <input type="file" accept=".json" id="file-restore" onchange="triggerRestore(this)">
+          </label>
+        </div>
+      </div>
+      
       <div class="divider"></div>
       
-      <h2 class="card-title" style="color:var(--clr-danger);">위험 구역</h2>
-      <button class="btn btn-danger btn-sm" onclick="triggerClearAll()">💥 모든 데이터 영구 파기</button>
+      <div id="danger-zone-trigger" style="text-align: center;">
+        <button class="btn btn-ghost btn-sm" onclick="toggleDangerZone()" style="color:var(--clr-text-soft);">⚠️ 위험 구역 보기</button>
+      </div>
+
+      <div id="danger-zone-content" style="display:none; animation: fadeUp 0.3s ease;">
+        <h2 class="card-title" style="color:var(--clr-danger);">위험 구역</h2>
+        <p style="color:var(--clr-text-mid); font-size:0.85rem; margin-bottom:16px;">주의: 아래 버튼을 누르면 모든 데이터가 즉시 삭제됩니다.</p>
+        <button class="btn btn-danger btn-full" onclick="triggerClearAll()">💥 모든 데이터 영구 파기</button>
+      </div>
     </div>
+    
   </section>
+  
+  <!-- Watermark -->
+  <div style="text-align: center; margin-top: 40px; padding-bottom: 20px; opacity: 0.4; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--clr-text-soft);">
+    Designed By <span style="font-weight: 700; color: var(--clr-accent);">Miricode</span>
+  </div>
 </div>
 
 <!-- ============================== CUSTOM MODALS ============================== -->
@@ -680,6 +714,7 @@
 // ==============================
 const STORAGE_KEY = 'bunkernote_data';
 const PW_KEY = 'bunkernote_pw_hash';
+const SALT_KEY = 'bunkernote_pw_salt'; // Safety: Added for salting
 const THEME_KEY = 'bunkernote_theme';
 const AUTO_LOCK_MS = 600000; // 10 minutes
 
@@ -741,8 +776,32 @@ async function sha256(text) {
 // Storage Management
 // ==============================
 function getPwHash() { return localStorage.getItem(PW_KEY); }
-async function setPwHash(pw) { localStorage.setItem(PW_KEY, await sha256(pw)); }
+function getPwSalt() { return localStorage.getItem(SALT_KEY); }
+
+async function setPwHash(pw) { 
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const saltHex = bufferToHex(salt);
+  localStorage.setItem(SALT_KEY, saltHex);
+  localStorage.setItem(PW_KEY, await sha256(pw + saltHex)); 
+}
+
 function hasPw() { return !!getPwHash(); }
+
+/**
+ * Wipe sensitive data from memory and UI
+ */
+function wipeSensitiveData() {
+  state.currentPwText = null;
+  state.entries = [];
+  state.selectedEmotion = null;
+  state.editingId = null;
+  state.viewingId = null;
+  
+  // Clear UI elements
+  if (dom.diaryList) dom.diaryList.innerHTML = '';
+  if (dom.diaryTitle) dom.diaryTitle.value = '';
+  if (dom.diaryBody) dom.diaryBody.value = '';
+}
 
 async function saveEntries(arr) {
   state.entries = arr;
@@ -828,7 +887,26 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 // ==============================
 // App Initialization & Security Logic
 // ==============================
+let dom = {}; // Cache for DOM elements
+
 function initApp() {
+  // Cache DOM
+  dom = {
+    lockScreen: document.getElementById('lock-screen'),
+    lockPw: document.getElementById('lock-pw'),
+    lockPwConfirm: document.getElementById('lock-pw-confirm'),
+    lockBtn: document.getElementById('lock-btn'),
+    lockSubtitle: document.getElementById('lock-subtitle'),
+    lockError: document.getElementById('lock-error'),
+    lockCancelBtn: document.getElementById('lock-cancel-btn'),
+    diaryList: document.getElementById('diary-list'),
+    diaryTitle: document.getElementById('diary-title'),
+    diaryBody: document.getElementById('diary-body'),
+    emotionGrid: document.getElementById('emotion-grid'),
+    searchInput: document.getElementById('search-input'),
+    emotionLabel: document.getElementById('emotion-label-text')
+  };
+
   const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
   renderThemeButtons(savedTheme);
 
@@ -884,9 +962,7 @@ function showLockScreen(mode) {
 
 function lockApp() {
   if (!hasPw()) return;
-  state.currentPwText = null; 
-  state.entries = []; // clear from memory
-  document.getElementById('diary-list').innerHTML = ''; // clear visual
+  wipeSensitiveData();
   showLockScreen('unlock');
 }
 
@@ -912,22 +988,43 @@ async function submitLock() {
     await setPwHash(in1);
     state.currentPwText = in1;
     await saveEntries([]); // init empty db
-    showToast('비밀번호가 설정되었습니다.');
+    showToast('비밀번호가 안전하게 설정되었습니다.');
     cancelLock();
     
   } else if (state.lockMode === 'auth-clear') {
-    const hash = await sha256(in1);
-    if (hash !== getPwHash()) {
-      return err.textContent = '비밀번호가 틀렸습니다.';
+    const storedHash = getPwHash();
+    const salt = getPwSalt();
+    let isValid = false;
+
+    if (salt) {
+      isValid = (await sha256(in1 + salt)) === storedHash;
+    } else {
+      // Legacy migration check
+      isValid = (await sha256(in1)) === storedHash;
     }
+
+    if (!isValid) return err.textContent = '비밀번호가 틀렸습니다.';
+    
     cancelLock();
     openModal('modal-clear-final');
     
   } else { // unlock
-    const hash = await sha256(in1);
-    if (hash !== getPwHash()) {
-      return err.textContent = '비밀번호가 틀렸습니다.';
+    const storedHash = getPwHash();
+    const salt = getPwSalt();
+    let isValid = false;
+
+    if (salt) {
+      isValid = (await sha256(in1 + salt)) === storedHash;
+    } else {
+      // Legacy migration check
+      if ((await sha256(in1)) === storedHash) {
+        // Upgrade to salted hash
+        await setPwHash(in1);
+        isValid = true;
+      }
     }
+
+    if (!isValid) return err.textContent = '비밀번호가 틀렸습니다.';
     
     // Load data
     state.currentPwText = in1;
@@ -1113,7 +1210,7 @@ function editCurrentEntry() {
 function getBackupFileName() {
   const pad = n => String(n).padStart(2,'0');
   const d = new Date();
-  return `bunker_note_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
+  return `bunker-note_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
 }
 
 async function downloadBackup() {
@@ -1149,7 +1246,9 @@ function triggerRestore(input) {
           return showToast('비밀번호가 일치하지 않아 파일을 열 수 없습니다.', 'error');
         }
       } else {
-        decryptedData = parsed; // Legacy unencrypted fallback
+        // Enforce encrypted backups in newest version
+        input.value = '';
+        return showToast('유효한 암호화 백업 파일이 아닙니다.', 'error');
       }
 
       if(!Array.isArray(decryptedData)) throw 'err';
@@ -1200,7 +1299,17 @@ async function executeChangePw() {
   const confPw = document.getElementById('cpw-confirm').value;
   const err = document.getElementById('cpw-error');
   
-  if (await sha256(oldPw) !== getPwHash()) return err.textContent = '현재 비밀번호가 틀립니다.';
+  const storedHash = getPwHash();
+  const salt = getPwSalt();
+  let isOldValid = false;
+
+  if (salt) {
+    isOldValid = (await sha256(oldPw + salt)) === storedHash;
+  } else {
+    isOldValid = (await sha256(oldPw)) === storedHash;
+  }
+
+  if (!isOldValid) return err.textContent = '현재 비밀번호가 틀립니다.';
   if (newPw.length < 4) return err.textContent = '새 비밀번호는 4자 이상이어야 합니다.';
   if (newPw !== confPw) return err.textContent = '비밀번호 확인이 일치하지 않습니다.';
   
@@ -1209,6 +1318,20 @@ async function executeChangePw() {
   await saveEntries(state.entries); // re-encrypt data with new pw
   closeModal('modal-change-pw');
   showToast('비밀번호가 안전하게 변경되었습니다.');
+}
+
+function toggleDangerZone() {
+  const trigger = document.getElementById('danger-zone-trigger');
+  const content = document.getElementById('danger-zone-content');
+  const btn = trigger.querySelector('button');
+  
+  if (content.style.display === 'none') {
+    content.style.display = 'block';
+    btn.textContent = '🔒 위험 구역 숨기기';
+  } else {
+    content.style.display = 'none';
+    btn.textContent = '⚠️ 위험 구역 보기';
+  }
 }
 
 window.onload = initApp;
